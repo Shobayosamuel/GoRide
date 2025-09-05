@@ -9,21 +9,20 @@ import (
 	"ride-sharing/shared/types"
 )
 
-type HttpHandler struct  {
+type HttpHandler struct {
 	Service domain.TripService
 }
 
 func (s *HttpHandler) HandleTripPreview(w http.ResponseWriter, r *http.Request) {
 	var reqBody previewTripRequest
+	log.Printf("I am here")
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 		http.Error(w, "failed to pass json data", http.StatusBadRequest)
 		return
 	}
-	fare := &domain.RideFareModel{
-		UserID: "42",
-	}
 	ctx := r.Context()
-	t, err := s.Service.CreateTrip(ctx, fare)
+	t, err := s.Service.GetRoute(ctx, &reqBody.Pickup, &reqBody.Destination)
+	log.Printf("Route: %v", t)
 	if err != nil {
 		log.Println(err)
 	}
@@ -31,8 +30,8 @@ func (s *HttpHandler) HandleTripPreview(w http.ResponseWriter, r *http.Request) 
 }
 
 type previewTripRequest struct {
-	UserID string `json:"userID"`
-	Pickup types.Coordinate `json:"pickup"`
+	UserID      string           `json:"userID"`
+	Pickup      types.Coordinate `json:"pickup"`
 	Destination types.Coordinate `json:"destination"`
 }
 
